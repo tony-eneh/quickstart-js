@@ -17,42 +17,42 @@
 
 // Shortcuts to DOM Elements.
 var messageForm = document.getElementById("message-form");
-var messageInput = document.getElementById("new-post-message");
-var titleInput = document.getElementById("new-post-title");
+var translationInput = document.getElementById("new-post-message");
+var proverbInput = document.getElementById("new-post-title");
 var signInButton = document.getElementById("sign-in-button");
 var signOutButton = document.getElementById("sign-out-button");
 var splashPage = document.getElementById("page-splash");
-var addPost = document.getElementById("add-post");
+var addProverb = document.getElementById("add-post");
 var addButton = document.getElementById("add");
-var recentPostsSection = document.getElementById("recent-posts-list");
-var userPostsSection = document.getElementById("user-posts-list");
-var topUserPostsSection = document.getElementById("top-user-posts-list");
+var recentProverbsSection = document.getElementById("recent-posts-list");
+var userProverbsSection = document.getElementById("user-posts-list");
+var topUserProverbsSection = document.getElementById("top-user-posts-list");
 var recentMenuButton = document.getElementById("menu-recent");
-var myPostsMenuButton = document.getElementById("menu-my-posts");
-var myTopPostsMenuButton = document.getElementById("menu-my-top-posts");
+var myProverbsMenuButton = document.getElementById("menu-my-posts");
+var myTopProverbsMenuButton = document.getElementById("menu-my-top-posts");
 var listeningFirebaseRefs = [];
 
 /**
  * Saves a new post to the Firebase DB.
  */
-function writeNewPost(uid, username, picture, title, body) {
+function writeNewPost(uid, username, picture, proverb, translation) {
   // A post entry.
   var postData = {
     author: username,
     uid: uid,
-    body: body,
-    title: title,
+    proverb: proverb,
+    translation: translation,
     starCount: 0,
     authorPic: picture,
   };
 
   // Get a key for a new Post.
-  var newPostKey = firebase.database().ref().child("posts").push().key;
+  var newPostKey = firebase.database().ref().child("proverbs").push().key;
 
   // Write the new post's data simultaneously in the posts list and the user's post list.
   var updates = {};
-  updates["/posts/" + newPostKey] = postData;
-  updates["/user-posts/" + uid + "/" + newPostKey] = postData;
+  updates["/proverbs/" + newPostKey] = postData;
+  updates["/user-proverbs/" + uid + "/" + newPostKey] = postData;
 
   return firebase.database().ref().update(updates);
 }
@@ -335,9 +335,9 @@ function startDatabaseQueries() {
   };
 
   // Fetching and displaying all posts of each sections.
-  fetchPosts(topUserPostsRef, topUserPostsSection);
-  fetchPosts(recentPostsRef, recentPostsSection);
-  fetchPosts(userPostsRef, userPostsSection);
+  fetchPosts(topUserPostsRef, topUserProverbsSection);
+  fetchPosts(recentPostsRef, recentProverbsSection);
+  fetchPosts(userPostsRef, userProverbsSection);
 
   // Keep track of all Firebase refs we are listening to.
   listeningFirebaseRefs.push(topUserPostsRef);
@@ -364,11 +364,13 @@ function writeUserData(userId, name, email, imageUrl) {
  */
 function cleanupUi() {
   // Remove all previously displayed posts.
-  topUserPostsSection.getElementsByClassName("posts-container")[0].innerHTML =
+  topUserProverbsSection.getElementsByClassName(
+    "posts-container"
+  )[0].innerHTML = "";
+  recentProverbsSection.getElementsByClassName("posts-container")[0].innerHTML =
     "";
-  recentPostsSection.getElementsByClassName("posts-container")[0].innerHTML =
+  userProverbsSection.getElementsByClassName("posts-container")[0].innerHTML =
     "";
-  userPostsSection.getElementsByClassName("posts-container")[0].innerHTML = "";
 
   // Stop all currently listening Firebase listeners.
   listeningFirebaseRefs.forEach(function (ref) {
@@ -409,7 +411,7 @@ function onAuthStateChanged(user) {
 /**
  * Creates a new post for the current user.
  */
-function newPostForCurrentUser(title, text) {
+function newPostForCurrentUser(proverb, translation) {
   // [START single_value_read]
   var userId = firebase.auth().currentUser.uid;
   return firebase
@@ -423,8 +425,8 @@ function newPostForCurrentUser(title, text) {
         firebase.auth().currentUser.uid,
         username,
         firebase.auth().currentUser.photoURL,
-        title,
-        text
+        proverb,
+        translation
       );
       // [END_EXCLUDE]
     });
@@ -435,13 +437,13 @@ function newPostForCurrentUser(title, text) {
  * Displays the given section element and changes styling of the given button.
  */
 function showSection(sectionElement, buttonElement) {
-  recentPostsSection.style.display = "none";
-  userPostsSection.style.display = "none";
-  topUserPostsSection.style.display = "none";
-  addPost.style.display = "none";
+  recentProverbsSection.style.display = "none";
+  userProverbsSection.style.display = "none";
+  topUserProverbsSection.style.display = "none";
+  addProverb.style.display = "none";
   recentMenuButton.classList.remove("is-active");
-  myPostsMenuButton.classList.remove("is-active");
-  myTopPostsMenuButton.classList.remove("is-active");
+  myProverbsMenuButton.classList.remove("is-active");
+  myTopProverbsMenuButton.classList.remove("is-active");
 
   if (sectionElement) {
     sectionElement.style.display = "block";
@@ -472,31 +474,31 @@ window.addEventListener(
     // Saves message on form submit.
     messageForm.onsubmit = function (e) {
       e.preventDefault();
-      var text = messageInput.value;
-      var title = titleInput.value;
+      var translation = translationInput.value;
+      var proverb = proverbInput.value;
       if (text && title) {
-        newPostForCurrentUser(title, text).then(function () {
-          myPostsMenuButton.click();
+        newPostForCurrentUser(proverb, translation).then(function () {
+          myProverbsMenuButton.click();
         });
-        messageInput.value = "";
-        titleInput.value = "";
+        translationInput.value = "";
+        proverbInput.value = "";
       }
     };
 
     // Bind menu buttons.
     recentMenuButton.onclick = function () {
-      showSection(recentPostsSection, recentMenuButton);
+      showSection(recentProverbsSection, recentMenuButton);
     };
-    myPostsMenuButton.onclick = function () {
-      showSection(userPostsSection, myPostsMenuButton);
+    myProverbsMenuButton.onclick = function () {
+      showSection(userProverbsSection, myProverbsMenuButton);
     };
-    myTopPostsMenuButton.onclick = function () {
-      showSection(topUserPostsSection, myTopPostsMenuButton);
+    myTopProverbsMenuButton.onclick = function () {
+      showSection(topUserProverbsSection, myTopProverbsMenuButton);
     };
     addButton.onclick = function () {
-      showSection(addPost);
-      messageInput.value = "";
-      titleInput.value = "";
+      showSection(addProverb);
+      translationInput.value = "";
+      proverbInput.value = "";
     };
     recentMenuButton.onclick();
   },
