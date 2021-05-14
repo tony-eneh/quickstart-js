@@ -40,7 +40,7 @@ function writeNewPost(uid, username, picture, proverb, translation) {
   var postData = {
     author: username,
     uid: uid,
-    proverb: proverb,
+    text: proverb,
     translation: translation,
     starCount: 0,
     authorPic: picture,
@@ -81,7 +81,14 @@ function toggleStar(postRef, uid) {
 /**
  * Creates a post element.
  */
-function createPostElement(postId, title, text, author, authorId, authorPic) {
+function createPostElement(
+  postId,
+  proverb,
+  translation,
+  author,
+  authorId,
+  authorPic
+) {
   var uid = firebase.auth().currentUser.uid;
 
   var html =
@@ -131,10 +138,10 @@ function createPostElement(postId, title, text, author, authorId, authorPic) {
   var unStar = postElement.getElementsByClassName("not-starred")[0];
 
   // Set values.
-  postElement.getElementsByClassName("text")[0].innerText = text;
+  postElement.getElementsByClassName("text")[0].innerText = translation;
   postElement.getElementsByClassName(
     "mdl-card__title-text"
-  )[0].innerText = title;
+  )[0].innerText = proverb;
   postElement.getElementsByClassName("username")[0].innerText =
     author || "Anonymous";
   postElement.getElementsByClassName("avatar")[0].style.backgroundImage =
@@ -298,8 +305,8 @@ function startDatabaseQueries() {
       containerElement.insertBefore(
         createPostElement(
           data.key,
-          data.val().title,
-          data.val().body,
+          data.val().proverb,
+          data.val().translation,
           author,
           data.val().uid,
           data.val().authorPic
@@ -476,7 +483,7 @@ window.addEventListener(
       e.preventDefault();
       var translation = translationInput.value;
       var proverb = proverbInput.value;
-      if (text && title) {
+      if (proverb && translation) {
         newPostForCurrentUser(proverb, translation).then(function () {
           myProverbsMenuButton.click();
         });
